@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/JunaDev/cortixlabs/internal/checks"
-	"github.com/JunaDev/cortixlabs/internal/k8s"
-	"github.com/JunaDev/cortixlabs/internal/scoring"
-	"github.com/JunaDev/cortixlabs/pkg/types"
+	"github.com/JunaCodeBase/cortix/internal/checks"
+	"github.com/JunaCodeBase/cortix/internal/k8s"
+	"github.com/JunaCodeBase/cortix/internal/scoring"
+	"github.com/JunaCodeBase/cortix/pkg/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

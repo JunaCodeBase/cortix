@@ -6,12 +6,12 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/JunaDev/cortixlabs/internal/detector"
-	"github.com/JunaDev/cortixlabs/internal/export"
-	"github.com/JunaDev/cortixlabs/internal/k8s"
-	"github.com/JunaDev/cortixlabs/internal/reporter"
-	"github.com/JunaDev/cortixlabs/internal/scanner"
-	"github.com/JunaDev/cortixlabs/pkg/types"
+	"github.com/JunaCodeBase/cortix/internal/detector"
+	"github.com/JunaCodeBase/cortix/internal/export"
+	"github.com/JunaCodeBase/cortix/internal/k8s"
+	"github.com/JunaCodeBase/cortix/internal/reporter"
+	"github.com/JunaCodeBase/cortix/internal/scanner"
+	"github.com/JunaCodeBase/cortix/pkg/types"
 	"github.com/spf13/cobra"
 )
 
@@ -183,7 +183,7 @@ func runExport(ctx context.Context, kubeconfigPath, contextName string, opts exp
 	fmt.Println("  1. Replace all PLACEHOLDER_REPLACE_ME values in secrets/")
 	fmt.Printf("  2. kubectl apply --dry-run=server -f %s\n", opts.OutputDir)
 	fmt.Printf("  3. bash %s/apply.sh\n", opts.OutputDir)
-	fmt.Println("\nCortix Labs — cortixlabs.io")
+	fmt.Println("\ncortix — github.com/JunaCodeBase/cortix")
 	return nil
 }
 
@@ -283,7 +283,7 @@ SCORING
                      Cost 58 · Operations 66 · Overall ~61
 
 ────────────────────────────────────────────────────────────────────────
-  Run cortix install or visit cortixlabs.io to fix issues automatically.
+  Run cortix install to fix issues automatically.
 `)
 		},
 	}

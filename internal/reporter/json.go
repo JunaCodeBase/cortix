@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/JunaDev/cortixlabs/pkg/types"
+	"github.com/JunaCodeBase/cortix/pkg/types"
 )
 
 // PrintJSON encodes the full ScanResult as indented JSON to w.

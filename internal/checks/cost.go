@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/JunaDev/cortixlabs/internal/k8s"
-	"github.com/JunaDev/cortixlabs/pkg/types"
+	"github.com/JunaCodeBase/cortix/internal/k8s"
+	"github.com/JunaCodeBase/cortix/pkg/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

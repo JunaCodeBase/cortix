@@ -3,7 +3,7 @@ package scoring
 import (
 	"math"
 
-	"github.com/JunaDev/cortixlabs/pkg/types"
+	"github.com/JunaCodeBase/cortix/pkg/types"
 )
 
 // categoryWeight maps each category to its fraction of the overall score.

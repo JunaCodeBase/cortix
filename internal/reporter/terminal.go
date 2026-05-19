@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/JunaDev/cortixlabs/pkg/types"
+	"github.com/JunaCodeBase/cortix/pkg/types"
 )
 
 // PrintTerminal writes the full scan result to w using colored terminal output.
@@ -126,7 +126,7 @@ func printScoreBlock(w io.Writer, result *types.ScanResult) {
 
 func printCTA(w io.Writer) {
 	fmt.Fprintf(w, "\n")
-	fmt.Fprintf(w, "  Run `cortix install` or visit cortixlabs.io to fix this automatically.\n")
+	fmt.Fprintf(w, "  Run `cortix install` to fix this automatically.\n")
 	fmt.Fprintf(w, "\n")
 }
 

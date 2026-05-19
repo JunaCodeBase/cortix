@@ -1,0 +1,11 @@
+.env
+*.kubeconfig
+bin/
+dist/
+*.exe
+.DS_Store
+.idea/
+.vscode/
+vendor/
+*.log
+coverage.out

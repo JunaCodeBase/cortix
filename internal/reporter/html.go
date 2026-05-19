@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/JunaDev/cortixlabs/pkg/types"
+	"github.com/JunaCodeBase/cortix/pkg/types"
 )
 
 // WriteHTML renders a self-contained HTML report to w and returns the suggested filename.
@@ -149,7 +149,7 @@ const htmlTemplate = `<!DOCTYPE html>
 {{end}}
 
 <div class="cta">
-  Run <code>cortix install</code> or <a href="https://cortixlabs.io" target="_blank">visit cortixlabs.io</a> to fix this automatically.
+  Run <code>cortix install</code> to fix this automatically.
 </div>
 </body>
 </html>

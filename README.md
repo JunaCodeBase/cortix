@@ -1,19 +1,21 @@
-# Cortix
+# cortix
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **See deep. Fix fast.**
 
-Cortix is an open-source CLI that connects to any Kubernetes cluster, detects missing or misconfigured infrastructure, and tells you exactly what to run to fix it.
+Open-source CLI that connects to any Kubernetes cluster, detects missing or misconfigured infrastructure, and tells you exactly what to run to fix it.
 
 ---
 
 ## What it does
 
-`cortix scan` gives you an instant health report of your cluster — what observability tooling is present, what is missing, and what is misconfigured.
+`cortix scan` gives you an instant health report — what observability tooling is present, what is missing, and what is misconfigured.
 
-`cortix export` reverse-engineers a live cluster into a clean, production-ready IaC git repository — secrets are always sanitized, Helm releases are noted as values stubs.
+`cortix export` reverse-engineers a live cluster into a clean, production-ready IaC git repository. Secrets are always sanitized; Helm releases are exported as values stubs.
 
 ```
-$ cortix scan --kubeconfig ~/.kube/config
+$ cortix scan
 
 Cortix — Cluster Scanner
 Scanning cluster: my-production-cluster
@@ -31,24 +33,24 @@ Scanning cluster: my-production-cluster
 ────────────────────────────────────────
 4 critical · 1 warning · 2 healthy
 
-Run cortix install or visit cortixlabs.io to fix this automatically.
+Run `cortix install` to fix this automatically.
 ```
 
 ---
 
 ## Install
 
-### Go install
+**Go install**
 
 ```bash
-go install github.com/JunaDev/cortixlabs/cmd/cortix@latest
+go install github.com/JunaCodeBase/cortix/cmd/cortix@latest
 ```
 
-### Build from source
+**Build from source**
 
 ```bash
-git clone https://github.com/JunaDev/cortixlabs.git
-cd cortixlabs/cortex
+git clone https://github.com/JunaCodeBase/cortix.git
+cd cortix
 go build -o cortix ./cmd/cortix
 ./cortix help
 ```
@@ -59,51 +61,84 @@ go build -o cortix ./cmd/cortix
 
 | Command | Description |
 |---------|-------------|
-| `cortix scan` | Quick scan — detect observability tools (7 detectors) |
-| `cortix scan --deep` | Deep scan — 5 categories, 100+ checks, weighted score |
-| `cortix scan --category security` | Deep scan for one category only |
-| `cortix export` | Export live cluster to clean IaC YAML files |
-| `cortix help` | Print all commands and flags |
+| `cortix help` | Print all commands, flags, and examples |
+| `cortix scan` | Quick scan — 7 observability tool detectors |
+| `cortix scan --deep` | Full deep scan — 5 categories, 100+ checks, weighted score |
+| `cortix scan --deep --category <cat>` | Deep scan for one category only |
+| `cortix scan --output json` | JSON output for CI pipelines |
+| `cortix scan --output html` | Shareable HTML health report |
+| `cortix scan --verbose` | Include IMPROVEMENT-level results |
+| `cortix scan --show-healthy` | Include passing checks in output |
+| `cortix export` | Export live cluster to clean IaC YAML |
+| `cortix export --dry-run` | Preview export — no files written |
 
 ---
 
-## Usage
+## Usage examples
 
 ```bash
-# Quick scan with default kubeconfig
+# Quick scan — default kubeconfig
 cortix scan
 
 # Scan a specific context
-cortix scan --context my-cluster
+cortix scan --context staging
 
-# Deep scan all categories
+# Full deep scan, all categories
 cortix scan --deep
 
-# Deep scan — security only
+# Deep scan — security checks only
 cortix scan --deep --category security
 
+# Deep scan — scoped to one namespace
+cortix scan --deep --namespace production
+
 # JSON output
-cortix scan --output json
+cortix scan --output json > report.json
 
 # HTML report
 cortix scan --deep --output html > report.html
 
-# Export all namespaces to ./cortix-export
-cortix export --kubeconfig ~/.kube/config
+# Show all checks including passing ones
+cortix scan --deep --verbose --show-healthy
 
-# Export single namespace, dry run
-cortix export --namespace production --dry-run
+# Export all non-system namespaces (dry run first)
+cortix export --dry-run
+cortix export --output ./my-cluster-backup
 
-# Export with best-practice enrichment
-cortix export --add-best-practices --output ./my-export
-
-# Full help
-cortix help
+# Export one namespace with best-practice enrichment
+cortix export --namespace production --add-best-practices --output ./prod-export
 ```
 
 ---
 
-## What cortix scan checks
+## Scan flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--kubeconfig` | `$KUBECONFIG` or `~/.kube/config` | Path to kubeconfig |
+| `--context` | current context | Kubeconfig context to use |
+| `--namespace` | all namespaces | Scope scan to a single namespace |
+| `--deep` | false | Run full deep scan (5 categories, 100+ checks) |
+| `--category` | all | `security` \| `reliability` \| `observability` \| `cost` \| `operations` |
+| `--output`, `-o` | `text` | `text` \| `json` \| `html` |
+| `--verbose` | false | Show IMPROVEMENT results |
+| `--show-healthy` | false | Include passing checks in output |
+
+## Export flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--kubeconfig` | `$KUBECONFIG` or `~/.kube/config` | Path to kubeconfig |
+| `--context` | current context | Kubeconfig context to use |
+| `--namespace` | all non-system | Export only this namespace |
+| `--output`, `-o` | `./cortix-export` | Output directory |
+| `--format` | `kustomize` | `kustomize` \| `helm` \| `external-secrets` |
+| `--add-best-practices` | false | Enrich Deployments with rolling update strategy and labels |
+| `--dry-run` | false | Preview only — no files written |
+
+---
+
+## What cortix scans for
 
 ### Quick scan (default)
 
@@ -123,7 +158,7 @@ cortix help
 |----------|--------|---------------|
 | Security | 30% | Pods running as root, privileged containers, RBAC wildcards, missing NetworkPolicies |
 | Reliability | 25% | Single-replica Deployments, missing liveness/readiness probes, CrashLoopBackOff pods |
-| Observability | 20% | Prometheus + Grafana + AlertManager + Loki + metrics-server presence and config |
+| Observability | 20% | Prometheus, Grafana, AlertManager, Loki, metrics-server presence and config |
 | Cost | 15% | Missing resource limits/requests, unused namespaces, LoadBalancer overuse |
 | Operations | 10% | No rolling update strategy, missing StorageClass, HPA policies, TLS on ingress |
 
@@ -132,7 +167,7 @@ cortix help
 ## Requirements
 
 - Go 1.21+
-- A Kubernetes cluster (kubeconfig or in-cluster)
+- A Kubernetes cluster accessible via kubeconfig or in-cluster config
 - Supported: EKS, GKE, AKS, self-hosted, kind, minikube
 
 ---
@@ -140,12 +175,12 @@ cortix help
 ## Project structure
 
 ```
-cortex/
-├── cmd/cortix/          — CLI entrypoint (main.go)
+cortix/
+├── cmd/cortix/          — CLI entrypoint
 ├── internal/
-│   ├── scanner/         — scan orchestrator (quick + deep)
-│   ├── detector/        — individual tool detectors
-│   ├── checks/          — deep-scan check implementations (5 categories)
+│   ├── scanner/         — scan orchestrator (quick + deep modes)
+│   ├── detector/        — tool detectors (label-selector based)
+│   ├── checks/          — deep-scan checks (5 categories)
 │   ├── scoring/         — weighted score calculator
 │   ├── reporter/        — terminal, JSON, and HTML output
 │   ├── export/          — reverse-YAML export engine
@@ -158,7 +193,3 @@ cortex/
 ## License
 
 MIT — see [LICENSE](LICENSE)
-
----
-
-Built by [Cortix Labs](https://cortixlabs.io)

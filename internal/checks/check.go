@@ -3,8 +3,8 @@ package checks
 import (
 	"context"
 
-	"github.com/JunaDev/cortixlabs/internal/k8s"
-	"github.com/JunaDev/cortixlabs/pkg/types"
+	"github.com/JunaCodeBase/cortix/internal/k8s"
+	"github.com/JunaCodeBase/cortix/pkg/types"
 )
 
 // Check is implemented by every deep-scan check.

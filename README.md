@@ -51,8 +51,14 @@ go install github.com/JunaCodeBase/cortix/cmd/cortix@latest
 ```bash
 git clone https://github.com/JunaCodeBase/cortix.git
 cd cortix
+
+# Linux / macOS
 go build -o cortix ./cmd/cortix
 ./cortix help
+
+# Windows (PowerShell)
+go build -o cortix.exe ./cmd/cortix
+.\cortix.exe help
 ```
 
 ---

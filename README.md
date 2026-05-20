@@ -1,6 +1,6 @@
 # cortix
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: ELv2](https://img.shields.io/badge/License-Elastic%20v2-blue.svg)](LICENSE)
 
 **See deep. Fix fast.**
 
@@ -198,4 +198,15 @@ cortix/
 
 ## License
 
-MIT — see [LICENSE](LICENSE)
+[Elastic License 2.0 (ELv2)](LICENSE)
+
+**You are free to:**
+- Use cortix to scan your own infrastructure
+- Modify it and run your modified version
+- Share it with others under the same license
+
+**You may not:**
+- Offer cortix as a hosted or managed service to third parties
+- Build a commercial product whose primary value comes from cortix's functionality
+
+In plain terms: use it freely for your own clusters. If you want to build a product on top of it, [get in touch](https://github.com/JunaCodeBase/cortix/issues).

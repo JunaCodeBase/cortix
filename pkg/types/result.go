@@ -125,8 +125,7 @@ type CheckResult struct {
 // CategoryResult aggregates all check results for one category.
 type CategoryResult struct {
 	Category         Category      `json:"category"`
-	Score            int           `json:"score"`             // 0–100
-	IndustryAvg      int           `json:"industry_avg"`
+	Score            int           `json:"score"` // 0–100
 	Checks           []CheckResult `json:"checks"`
 	CriticalCount    int           `json:"critical_count"`
 	WarningCount     int           `json:"warning_count"`
@@ -136,11 +135,9 @@ type CategoryResult struct {
 
 // Score is the final weighted result across all categories.
 type Score struct {
-	Overall     int              `json:"overall"`      // weighted 0–100
-	IndustryAvg int              `json:"industry_avg"` // weighted industry baseline
-	Delta       int              `json:"delta"`        // Overall - IndustryAvg
-	Verdict     string           `json:"verdict"`
-	Breakdown   map[Category]int `json:"breakdown"`    // per-category score 0–100
+	Overall   int              `json:"overall"`   // weighted 0–100
+	Verdict   string           `json:"verdict"`
+	Breakdown map[Category]int `json:"breakdown"` // per-category score 0–100
 }
 
 // ScanResult is the top-level output for any scan mode.

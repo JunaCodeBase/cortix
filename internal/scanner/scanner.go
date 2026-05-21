@@ -133,10 +133,9 @@ func (s *Scanner) runDeep(ctx context.Context, opts types.ScanOptions) (*types.S
 			continue
 		}
 		cr := types.CategoryResult{
-			Category:    cat,
-			Score:       scoring.ScoreCategory(chkResults),
-			IndustryAvg: scoring.IndustryAvgFor(cat),
-			Checks:      chkResults,
+			Category: cat,
+			Score:    scoring.ScoreCategory(chkResults),
+			Checks:   chkResults,
 		}
 		scoring.CountsBySeverity(&cr)
 		result.Categories = append(result.Categories, cr)

@@ -81,18 +81,9 @@ func printDeepResult(w io.Writer, result *types.ScanResult, opts types.ScanOptio
 }
 
 func printCategory(w io.Writer, cat types.CategoryResult, opts types.ScanOptions) {
-	delta := cat.Score - cat.IndustryAvg
-	deltaStr := fmt.Sprintf("%+d", delta)
-	if delta >= 0 {
-		deltaStr = clrPass.Sprint(deltaStr + " ▲")
-	} else {
-		deltaStr = clrCritical.Sprint(deltaStr + " ▼")
-	}
-
 	clrBold.Fprintf(w, "  %s %s", categoryIcon(cat.Category), strings.ToUpper(string(cat.Category)))
 	fmt.Fprintf(w, "  score: ")
-	clrScore.Fprintf(w, "%d/100", cat.Score)
-	fmt.Fprintf(w, "  industry avg: %d  delta: %s\n", cat.IndustryAvg, deltaStr)
+	clrScore.Fprintf(w, "%d/100\n", cat.Score)
 
 	for _, chk := range cat.Checks {
 		if !shouldShow(chk.Severity, opts) {
@@ -125,31 +116,20 @@ func printScoreBlock(w io.Writer, result *types.ScanResult) {
 	printDivider(w)
 
 	fmt.Fprintf(w, "  Overall Score : ")
-	clrScore.Fprintf(w, "%d/100", s.Overall)
-	fmt.Fprintf(w, "  (industry avg: %d  delta: %+d)\n", s.IndustryAvg, s.Delta)
+	clrScore.Fprintf(w, "%d/100\n", s.Overall)
 	fmt.Fprintf(w, "  Verdict       : ")
 	clrBold.Fprintf(w, "%s\n", s.Verdict)
 	fmt.Fprintln(w)
 
-	clrBold.Fprintf(w, "  %-16s  %-10s  %-4s  %s\n", "Category", "Your Score", "Avg", "Delta")
-	fmt.Fprintf(w, "  %s\n", strings.Repeat("-", 52))
+	clrBold.Fprintf(w, "  %-16s  %s\n", "Category", "Score")
+	fmt.Fprintf(w, "  %s\n", strings.Repeat("-", 32))
 
 	for _, cat := range types.AllCategories() {
-		score := s.Breakdown[cat]
-		avg := result.CategoryResultByName(cat)
-		avgScore := 0
-		if avg != nil {
-			avgScore = avg.IndustryAvg
+		score, ok := s.Breakdown[cat]
+		if !ok {
+			continue
 		}
-		delta := score - avgScore
-		arrow := "▲"
-		deltaClr := clrPass
-		if delta < 0 {
-			arrow = "▼"
-			deltaClr = clrCritical
-		}
-		fmt.Fprintf(w, "  %-16s  %-10d  %-4d  ", string(cat), score, avgScore)
-		deltaClr.Fprintf(w, "%+d %s\n", delta, arrow)
+		fmt.Fprintf(w, "  %-16s  %d/100\n", string(cat), score)
 	}
 	printDivider(w)
 }

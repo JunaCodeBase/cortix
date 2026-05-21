@@ -103,21 +103,3 @@ func TestScoreCategory(t *testing.T) {
 	}
 }
 
-func TestIndustryAvgFor(t *testing.T) {
-	cases := []struct {
-		cat  types.Category
-		want int
-	}{
-		{types.CategorySecurity, 61},
-		{types.CategoryReliability, 72},
-		{types.CategoryObservability, 45},
-		{types.CategoryCost, 58},
-		{types.CategoryOperations, 66},
-	}
-	for _, tc := range cases {
-		got := scoring.IndustryAvgFor(tc.cat)
-		if got != tc.want {
-			t.Errorf("IndustryAvgFor(%s) = %d, want %d", tc.cat, got, tc.want)
-		}
-	}
-}

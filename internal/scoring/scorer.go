@@ -15,15 +15,6 @@ var categoryWeight = map[types.Category]float64{
 	types.CategoryOperations:    0.10,
 }
 
-// industryAvg is the hardcoded v1 baseline. Replace with live data in v2.
-var industryAvg = map[types.Category]int{
-	types.CategorySecurity:      61,
-	types.CategoryReliability:   72,
-	types.CategoryObservability: 45,
-	types.CategoryCost:          58,
-	types.CategoryOperations:    66,
-}
-
 // ScoreCategory computes a 0–100 score for one category's check results.
 // Each unique check ID is scored by its worst severity:
 //
@@ -50,11 +41,6 @@ func ScoreCategory(results []types.CheckResult) int {
 	return total / len(worstByID)
 }
 
-// IndustryAvgFor returns the hardcoded industry baseline for a category.
-func IndustryAvgFor(cat types.Category) int {
-	return industryAvg[cat]
-}
-
 // Calculate produces the final weighted Score from a completed ScanResult.
 func Calculate(result *types.ScanResult) *types.Score {
 	breakdown := make(map[types.Category]int, len(result.Categories))
@@ -63,23 +49,17 @@ func Calculate(result *types.ScanResult) *types.Score {
 	}
 
 	overall := 0.0
-	industryOverall := 0.0
 	for cat, w := range categoryWeight {
 		if score, ok := breakdown[cat]; ok {
 			overall += float64(score) * w
 		}
-		industryOverall += float64(industryAvg[cat]) * w
 	}
 
 	overallInt := int(math.Round(overall))
-	industryInt := int(math.Round(industryOverall))
-
 	return &types.Score{
-		Overall:     overallInt,
-		IndustryAvg: industryInt,
-		Delta:       overallInt - industryInt,
-		Verdict:     verdictFor(overallInt),
-		Breakdown:   breakdown,
+		Overall:   overallInt,
+		Verdict:   verdictFor(overallInt),
+		Breakdown: breakdown,
 	}
 }
 

@@ -95,8 +95,6 @@ const htmlTemplate = `<!DOCTYPE html>
   .badge.critical { background:var(--red); }
   .badge.warning  { background:var(--yellow); color:#000; }
   .badge.pass     { background:var(--green); color:#000; }
-  .delta-pos { color:var(--green); }
-  .delta-neg { color:var(--red); }
 </style>
 </head>
 <body>
@@ -108,10 +106,6 @@ const htmlTemplate = `<!DOCTYPE html>
   <div>
     <div class="score-big">{{.Score.Overall}}<span style="font-size:1.5rem;color:var(--muted)">/100</span></div>
     <div class="score-verdict">{{.Score.Verdict}}</div>
-  </div>
-  <div style="color:var(--muted);font-size:.875rem;">
-    Industry avg: {{.Score.IndustryAvg}}/100 &nbsp;
-    {{if ge .Score.Delta 0}}<span class="delta-pos">▲ +{{.Score.Delta}}</span>{{else}}<span class="delta-neg">▼ {{.Score.Delta}}</span>{{end}}
   </div>
 </div>
 {{else if .HealthScore}}
@@ -125,10 +119,7 @@ const htmlTemplate = `<!DOCTYPE html>
 <div class="category">
   <div class="category-header">
     <span>{{upper (string .Category)}}</span>
-    <span>{{.Score}}/100
-      {{if ge (sub .Score .IndustryAvg) 0}}<span class="delta-pos">▲</span>{{else}}<span class="delta-neg">▼</span>{{end}}
-      vs avg {{.IndustryAvg}}
-    </span>
+    <span>{{.Score}}/100</span>
   </div>
   {{range .Checks}}
   <div class="check {{severityClass .Severity}}">

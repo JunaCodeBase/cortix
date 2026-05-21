@@ -5,7 +5,7 @@
 
 **See deep. Fix fast.**
 
-Open-source Kubernetes intelligence CLI. Scans any cluster, scores it against industry benchmarks, and tells you exactly what to run to fix every gap. Works standalone or as a native tool inside Claude Code, Cursor, Codex, and Aider.
+Open-source Kubernetes intelligence CLI. Scans any cluster, scores it across five categories, and tells you exactly what to run to fix every gap. Works standalone or as a native tool inside Claude Code, Cursor, Codex, and Aider.
 
 ---
 
@@ -100,7 +100,7 @@ When cortix is registered, your AI assistant gains three tools it can call direc
 Quick scan — checks 7 observability tools (Prometheus, Grafana, AlertManager, Loki, metrics-server, cert-manager, ingress-nginx). Returns presence, severity, business impact text, and the exact Helm command to fix each gap.
 
 ### `cortix_deep_scan`
-Full scan across 5 categories with weighted scoring and industry benchmarks:
+Full scan across 5 categories with weighted scoring:
 
 | Category | Weight | Checks |
 |---|---|---|
@@ -110,7 +110,7 @@ Full scan across 5 categories with weighted scoring and industry benchmarks:
 | Cost | 15% | Missing resource limits/requests, unused namespaces, ResourceQuota gaps, LoadBalancer overuse |
 | Operations | 10% | Rolling update strategy, cert-manager, ingress TLS, StorageClass, HPA policies |
 
-Each category scores 0–100. Your score is compared against industry averages so you know exactly where you stand.
+Each category scores 0–100. The weighted overall score gives you a single health number for your cluster.
 
 ### `cortix_export_preview`
 Dry-run preview of exporting the cluster to a clean IaC git repository — no files written. Shows namespace list, resource counts, Helm releases detected, and warnings.
@@ -257,7 +257,7 @@ cortix/
 │   ├── scanner/         scan orchestrator (quick + deep modes, parallel categories)
 │   ├── detector/        quick-scan detectors (label-selector based)
 │   ├── checks/          deep-scan checks (security, reliability, observability, cost, operations)
-│   ├── scoring/         weighted scorer with industry benchmarks
+│   ├── scoring/         weighted scorer (Security 30%, Reliability 25%, Observability 20%, Cost 15%, Operations 10%)
 │   ├── reporter/        terminal, JSON, and HTML output formatters
 │   ├── export/          reverse-YAML export engine + strip + sanitize
 │   ├── install/         cortix install / uninstall for AI assistants

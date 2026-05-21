@@ -33,36 +33,72 @@ func rootCmd() *cobra.Command {
 	return root
 }
 
+// scanCmd builds the `cortix scan` command with a `deep` subcommand.
+// Shared persistent flags (kubeconfig, context, namespace, output, verbose,
+// show-healthy, exclude, ignore-case, exact) are registered on the parent scan
+// command so that both `scan` and `scan deep` inherit them.
 func scanCmd() *cobra.Command {
 	var opts types.ScanOptions
 	var kubeconfigPath string
 	var contextName string
+	var excludeValues []string
 
 	cmd := &cobra.Command{
 		Use:   "scan",
-		Short: "Scan a Kubernetes cluster",
-		Long: `Scan a Kubernetes cluster for missing or misconfigured infrastructure.
+		Short: "Quick scan — 7 observability detectors",
+		Long: `Scan a Kubernetes cluster for missing observability tooling.
 
-Default mode: quick scan — checks 7 observability tools.
-Use --deep for the full engine: 5 categories, 100+ checks, weighted score.`,
+Quick mode checks 7 tools: Prometheus, Grafana, AlertManager, Loki,
+metrics-server, cert-manager, and ingress-nginx.
+
+For the full 5-category, 100+ check engine use:
+  cortix scan deep`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			opts.Exclude.Values = excludeValues
 			return runScan(cmd.Context(), kubeconfigPath, contextName, opts)
 		},
 	}
 
-	// Connection flags
-	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", "", "path to kubeconfig (default: $KUBECONFIG or ~/.kube/config)")
-	cmd.Flags().StringVar(&contextName, "context", "", "kubeconfig context to use")
-	cmd.Flags().StringVar(&opts.Namespace, "namespace", "", "scope scan to a single namespace")
+	// Persistent connection flags — inherited by all subcommands.
+	cmd.PersistentFlags().StringVar(&kubeconfigPath, "kubeconfig", "", "path to kubeconfig (default: $KUBECONFIG or ~/.kube/config)")
+	cmd.PersistentFlags().StringVar(&contextName, "context", "", "kubeconfig context to use")
+	cmd.PersistentFlags().StringVar(&opts.Namespace, "namespace", "", "scope scan to a single namespace")
 
-	// Scan mode flags
-	cmd.Flags().BoolVar(&opts.Deep, "deep", false, "run full deep scan (5 categories, 100+ checks)")
+	// Persistent output flags — inherited by all subcommands.
+	cmd.PersistentFlags().StringVarP(&opts.Output, "output", "o", "text", "output format: text|json|html")
+	cmd.PersistentFlags().BoolVar(&opts.Verbose, "verbose", false, "show IMPROVEMENT results in addition to CRITICAL and WARNING")
+	cmd.PersistentFlags().BoolVar(&opts.ShowHealthy, "show-healthy", false, "include passing checks in output")
+
+	// Persistent exclude flags — inherited by all subcommands.
+	cmd.PersistentFlags().StringArrayVar(&excludeValues, "exclude", nil, "exclude resources matching type:name (repeatable, e.g. --exclude namespace:kube-system)")
+	cmd.PersistentFlags().BoolVarP(&opts.Exclude.CaseInsensitive, "ignore-case", "i", false, "case-insensitive matching for --exclude patterns")
+	cmd.PersistentFlags().BoolVarP(&opts.Exclude.ExactMatch, "exact", "e", false, "exact match for --exclude (default is substring)")
+
+	// Attach the `scan deep` subcommand.
+	cmd.AddCommand(scanDeepCmd(&opts, &kubeconfigPath, &contextName, &excludeValues))
+
+	return cmd
+}
+
+// scanDeepCmd returns the `cortix scan deep` subcommand.
+// It receives pointers to the shared variables bound by scanCmd's persistent flags.
+func scanDeepCmd(opts *types.ScanOptions, kubeconfigPath, contextName *string, excludeValues *[]string) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "deep",
+		Short: "Full deep scan — 5 categories, 100+ checks, weighted score",
+		Long: `Run the full deep scan engine across all five categories:
+  Security (30%), Reliability (25%), Observability (20%), Cost (15%), Operations (10%).
+
+Each category is scored 0–100 and compared against industry averages.`,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			opts.Deep = true
+			opts.Exclude.Values = *excludeValues
+			return runScan(cmd.Context(), *kubeconfigPath, *contextName, *opts)
+		},
+	}
+
+	// Category flag is only meaningful for deep scans.
 	cmd.Flags().StringVar(&opts.Category, "category", "", "run only one category: security|reliability|observability|cost|operations")
-
-	// Output flags
-	cmd.Flags().StringVarP(&opts.Output, "output", "o", "text", "output format: text|json|html")
-	cmd.Flags().BoolVar(&opts.Verbose, "verbose", false, "show IMPROVEMENT results in addition to CRITICAL and WARNING")
-	cmd.Flags().BoolVar(&opts.ShowHealthy, "show-healthy", false, "include passing checks in output")
 
 	return cmd
 }
@@ -100,6 +136,10 @@ func runScan(ctx context.Context, kubeconfigPath, contextName string, opts types
 func writeOutput(result *types.ScanResult, opts types.ScanOptions) error {
 	switch opts.Output {
 	case "json":
+		// Use grouped output for deep scans; flat output for quick scans.
+		if result.Mode == types.ScanModeDeep {
+			return reporter.PrintGroupedJSON(os.Stdout, result)
+		}
 		return reporter.PrintJSON(os.Stdout, result)
 
 	case "html":

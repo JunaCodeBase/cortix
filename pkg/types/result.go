@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 // ScanMode selects quick vs deep scan.
 type ScanMode string
@@ -42,14 +45,68 @@ const (
 	SeverityPass        Severity = "PASS"
 )
 
+// ExcludeFilter holds the parsed --exclude / -i / -e flag values.
+// Values are in the form "type:name", e.g. "namespace:kube-system" or "deployment:nginx".
+type ExcludeFilter struct {
+	Values          []string // raw "type:value" patterns
+	CaseInsensitive bool     // -i: lowercase both sides before comparing
+	ExactMatch      bool     // -e: require equality instead of substring
+}
+
+// Matches returns true if the given resourceType/name pair is matched by any
+// exclude pattern. resourceType is e.g. "namespace", "deployment", "pod".
+// name is the object name.
+func (f ExcludeFilter) Matches(resourceType, name string) bool {
+	for _, v := range f.Values {
+		patType, patName, ok := strings.Cut(v, ":")
+		if !ok {
+			// No colon — treat entire value as a name pattern across all resource types.
+			patName = v
+			patType = ""
+		}
+
+		// If the pattern specifies a resource type, it must match.
+		if patType != "" {
+			rt := resourceType
+			pt := patType
+			if f.CaseInsensitive {
+				rt = strings.ToLower(rt)
+				pt = strings.ToLower(pt)
+			}
+			if rt != pt {
+				continue
+			}
+		}
+
+		n := name
+		p := patName
+		if f.CaseInsensitive {
+			n = strings.ToLower(n)
+			p = strings.ToLower(p)
+		}
+
+		if f.ExactMatch {
+			if n == p {
+				return true
+			}
+		} else {
+			if strings.Contains(n, p) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // ScanOptions carries every flag the scan command accepts.
 type ScanOptions struct {
-	Deep        bool   // --deep
-	Verbose     bool   // --verbose: also show IMPROVEMENT
-	ShowHealthy bool   // --show-healthy: also show PASS
-	Category    string // --category: run only this category
-	Namespace   string // --namespace: scope checks to one namespace
-	Output      string // --output: text | json | html
+	Deep        bool          // --deep
+	Verbose     bool          // --verbose: also show IMPROVEMENT
+	ShowHealthy bool          // --show-healthy: also show PASS
+	Category    string        // --category: run only this category (deep subcommand only)
+	Namespace   string        // --namespace: scope checks to one namespace
+	Output      string        // --output: text | json | html
+	Exclude     ExcludeFilter // --exclude / -i / -e
 }
 
 // CheckResult is the outcome of a single deep-scan check.

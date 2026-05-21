@@ -9,6 +9,8 @@ import (
 	"github.com/JunaCodeBase/cortix/internal/detector"
 	"github.com/JunaCodeBase/cortix/internal/export"
 	"github.com/JunaCodeBase/cortix/internal/k8s"
+	cortixinstall "github.com/JunaCodeBase/cortix/internal/install"
+	cortixmcp "github.com/JunaCodeBase/cortix/internal/mcp"
 	"github.com/JunaCodeBase/cortix/internal/reporter"
 	"github.com/JunaCodeBase/cortix/internal/scanner"
 	"github.com/JunaCodeBase/cortix/pkg/types"
@@ -29,6 +31,9 @@ func rootCmd() *cobra.Command {
 	}
 	root.AddCommand(scanCmd())
 	root.AddCommand(exportCmd())
+	root.AddCommand(mcpCmd())
+	root.AddCommand(installCmd())
+	root.AddCommand(uninstallCmd())
 	root.AddCommand(helpCmd())
 	return root
 }
@@ -225,6 +230,67 @@ func runExport(ctx context.Context, kubeconfigPath, contextName string, opts exp
 	fmt.Printf("  3. bash %s/apply.sh\n", opts.OutputDir)
 	fmt.Println("\ncortix — github.com/JunaCodeBase/cortix")
 	return nil
+}
+
+func installCmd() *cobra.Command {
+	var platform string
+	var projectDir string
+
+	cmd := &cobra.Command{
+		Use:   "install",
+		Short: "Register cortix as a skill and MCP server with your AI coding assistant",
+		Long: `Writes the cortix skill file and registers the MCP server so that
+/cortix works in Claude Code, Cursor, Codex, and Aider.
+
+Platforms:
+  claude  (default) — ~/.claude/skills/cortix/SKILL.md + ~/.claude/.mcp.json
+  cursor            — .cursor/mcp.json in the current project directory
+  codex             — AGENTS.md in the current project directory
+  aider             — prints the config snippet to add to ~/.aider.conf.yml`,
+		Example: `  cortix install                   # Claude Code (default)
+  cortix install --platform cursor  # Cursor
+  cortix install --platform codex   # Codex`,
+		RunE: func(_ *cobra.Command, _ []string) error {
+			return cortixinstall.Install(cortixinstall.Options{
+				Platform:   cortixinstall.Platform(platform),
+				ProjectDir: projectDir,
+			})
+		},
+	}
+
+	cmd.Flags().StringVar(&platform, "platform", "claude", "target AI assistant: claude | cursor | codex | aider")
+	cmd.Flags().StringVar(&projectDir, "project-dir", "", "project directory for cursor/codex configs (default: current directory)")
+	return cmd
+}
+
+func uninstallCmd() *cobra.Command {
+	var platform string
+
+	cmd := &cobra.Command{
+		Use:   "uninstall",
+		Short: "Remove cortix skill and MCP registration from your AI coding assistant",
+		RunE: func(_ *cobra.Command, _ []string) error {
+			return cortixinstall.Uninstall(cortixinstall.Platform(platform))
+		},
+	}
+
+	cmd.Flags().StringVar(&platform, "platform", "claude", "target: claude | cursor")
+	return cmd
+}
+
+func mcpCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "mcp",
+		Short: "Start the Cortix MCP server (stdio transport)",
+		Long: `Start Cortix as an MCP server so Claude Code, Cursor, and other AI tools
+can call cortix_scan, cortix_deep_scan, and cortix_export_preview as native tools.
+
+Register in Claude Code: add to ~/.claude/settings.json mcpServers block.
+Register in Cursor: add to .cursor/mcp.json mcpServers block.`,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return cortixmcp.Serve()
+		},
+	}
 }
 
 func helpCmd() *cobra.Command {
